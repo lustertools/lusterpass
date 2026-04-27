@@ -7,6 +7,8 @@ description: Agent-safe secret manager for AI coding agents.
 
 **Secrets that AI coding agents can use, but never see.**
 
+![Agent-safe demo](https://raw.githubusercontent.com/lustertools/lusterpass/main/demos/agent-safe/agent-safe-demo.gif)
+
 Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment via shell `eval`, so AI coding agents can run real commands against real systems without ever exposing the values to the LLM driving the shell.
 
 [View on GitHub](https://github.com/lustertools/lusterpass) · [Latest release](https://github.com/lustertools/lusterpass/releases/latest) · [Report an issue](https://github.com/lustertools/lusterpass/issues)
