@@ -21,5 +21,9 @@ Produces `agent-safe-demo.gif` (~22s, single loop) in this directory. Embedding 
 ## What viewers see
 
 1. **Act 1 (the problem)** — agent reads `.env`, password value `p4ssw0rd!2026` and OpenAI key prefix appear in the agent's transcript. Annotated as a leak.
-2. **Act 2 (with lusterpass)** — agent runs `eval "$(lusterpass env --profile dev)"`, then the same migration script. Agent's output never includes any secret value.
+2. **Act 2 (with lusterpass)** — agent runs `lusterpass exec -- ./run-migration.sh`, the migration succeeds, no secret value enters the agent's transcript.
 3. **Closer** — `grep` over the saved transcript returns zero matches against the leaked tokens.
+
+### Note on the chosen path
+
+The demo uses `lusterpass exec` for visual clarity (single command, no `eval` to explain). The `eval "$(lusterpass env)"` path is equally supported and equally agent-safe in a captured-pipe context — neither is deprecated. The project's [security model](../../docs/security-model.md) compares the two. The demo's purpose is to contrast "agent reads `.env`" (broken) against "agent uses lusterpass" (safe), not to argue that `exec` is the only valid lusterpass invocation.

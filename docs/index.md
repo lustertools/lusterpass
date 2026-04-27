@@ -10,7 +10,9 @@ description: Agent-safe secret manager for AI coding agents.
 
 ![Agent-safe demo](https://raw.githubusercontent.com/lustertools/lusterpass/main/demos/agent-safe/agent-safe-demo.gif)
 
-Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment via shell `eval`. The values never enter an AI agent's transcript, your shell history, or a checked-in file — they flow straight from your encrypted local cache into the subprocess that needs them.
+> **No migration required.** The demo shows `lusterpass exec` because it's visually clearest, but `eval "$(lusterpass env)"` is equally supported, equally agent-safe in a captured-pipe context, and the right choice for direnv. Both paths are first-class — pick whichever fits your workflow. See [Security model](security-model.html) for the full comparison.
+
+Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment. The values never enter an AI agent's transcript, your shell history, or a checked-in file — they flow straight from your encrypted local cache into the subprocess that needs them.
 
 Built for two audiences that share the same problem:
 

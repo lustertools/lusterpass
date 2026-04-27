@@ -5,7 +5,9 @@
 
 ![Agent-safe demo](demos/agent-safe/agent-safe-demo.gif)
 
-Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment via shell `eval`. The values never enter an AI agent's transcript, your shell history, or a checked-in file — they flow straight from your encrypted local cache into the subprocess that needs them.
+> **No migration required.** The demo shows `lusterpass exec` because it's visually clearest, but `eval "$(lusterpass env)"` is equally supported, equally agent-safe in a captured-pipe context, and the right choice for direnv. Both paths are first-class — pick whichever fits your workflow. See [Security model](#security-model) for the full comparison.
+
+Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment. The values never enter an AI agent's transcript, your shell history, or a checked-in file — they flow straight from your encrypted local cache into the subprocess that needs them.
 
 Built for two audiences that share the same problem:
 
@@ -201,6 +203,8 @@ Open a new shell after running the appropriate command, then `lusterpass <Tab>` 
 ---
 
 ## Security model
+
+**Both `exec` and `eval` are first-class supported paths and not going anywhere.** If you've been using `eval "$(lusterpass env)"` and it works, keep using it — there's no deprecation, no forced migration. `exec` is recommended as the default for one-shot commands because secrets never enter your parent shell, but `eval` is the right choice for direnv integration and extended interactive sessions. Pick whichever fits your workflow.
 
 Three execution paths with very different safety properties:
 

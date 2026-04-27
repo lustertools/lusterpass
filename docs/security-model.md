@@ -7,6 +7,8 @@ description: What lusterpass defends against, what it doesn't, and how each exec
 
 This page is for users who want to understand precisely what lusterpass does and does not protect — and how to choose between `exec`, `eval`, and (avoid) raw `env` in your own threat model. It is deliberately blunt about limitations.
 
+> **Both `lusterpass exec` and `eval "$(lusterpass env)"` are first-class supported and not deprecated.** This document helps you pick the right one for your situation, not migrate away from either. If `eval` works for you, keep using it. `exec` exists for stricter privacy in one-shot command runs and for cases where you don't want secrets in your parent shell — read on for the trade-offs.
+
 If you are looking for setup or usage instructions, see [Bitwarden setup](bitwarden-setup.html) and the [README](https://github.com/lustertools/lusterpass#quickstart). This document assumes you already know the basics.
 
 ---
