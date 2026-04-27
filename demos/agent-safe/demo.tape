@@ -9,7 +9,7 @@
 Output agent-safe-demo.gif
 
 Set Shell "zsh"
-Set FontSize 14
+Set FontSize 20
 Set Width 1200
 Set Height 720
 Set Theme "Catppuccin Mocha"

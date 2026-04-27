@@ -124,6 +124,8 @@ The only sharp edge: if an agent runs `lusterpass env` *without* `eval`, the val
 
 ## Commands
 
+![Daily workflow demo: login, list, pull, env, enrol](demos/commands-tour/commands-tour-demo.gif)
+
 ```text
 lusterpass login              # store token + org ID for an account
 lusterpass account list       # multi-account: see all configured accounts

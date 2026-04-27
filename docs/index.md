@@ -64,6 +64,12 @@ eval "$(lusterpass env --profile dev)" # load into current shell
 
 Your subprocess sees the resolved values. Your AI agent's transcript, your shell history, your CI logs, and your checked-in files don't.
 
+### See it in action
+
+The full daily workflow — `login`, `list`, `pull`, `env`, `enrol` — in 30 seconds:
+
+![Daily workflow demo: login, list, pull, env, enrol](https://raw.githubusercontent.com/lustertools/lusterpass/main/demos/commands-tour/commands-tour-demo.gif)
+
 ---
 
 ## About lustertools
