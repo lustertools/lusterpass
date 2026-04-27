@@ -1,10 +1,16 @@
 # lusterpass
 
 **Secrets that AI coding agents can use, but never see.**
+**A clean replacement for `.env` files in CI and on dev workstations.**
 
 ![Agent-safe demo](demos/agent-safe/agent-safe-demo.gif)
 
-Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment without ever exposing the values to the agent driving the shell. It is built for the era of AI coding agents — Cline, Cursor, Aider, OpenClaw, Hermes, and any LLM-driven workflow that needs to run real commands against real systems.
+Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment via shell `eval`. The values never enter an AI agent's transcript, your shell history, or a checked-in file — they flow straight from your encrypted local cache into the subprocess that needs them.
+
+Built for two audiences that share the same problem:
+
+- **Human developers and CI pipelines** — anyone running deploy scripts, integration tests, or local dev servers who's tired of `.env` sprawl, accidentally-committed `.envrc`s, secrets in CI logs, and per-project SaaS-secret-store subscriptions.
+- **AI coding agents** — Cline, Cursor, Aider, OpenClaw, Hermes, and any LLM-driven workflow that needs to run real commands without leaking secret values into prompt cache, transcripts, or vendor telemetry.
 
 ```bash
 # Your AI agent runs this:
@@ -21,7 +27,11 @@ The agent never reads a `.env` file. The values never enter the LLM's context wi
 
 ## Why this matters now
 
-AI coding agents are now writing code that needs database passwords, API tokens, and OAuth secrets to actually work. The default workflow today is broken in two directions:
+The same mechanic solves two related leaks.
+
+**For human developers and CI pipelines.** `.env` files are a known mess: they get committed by accident, copied between projects, dumped into CI logs by a stray `printenv`, inherited by every grandchild process, and they spread across machines without any audit trail. Lusterpass replaces `.env` with a vault-backed loader: secrets live encrypted in Bitwarden, get pulled once into an encrypted local cache, and reach the subprocess that needs them via `eval` — never via a checked-in file or a CI variable export step that lands in plaintext logs.
+
+**For AI coding agents.** Agents are now writing code that needs database passwords, API tokens, and OAuth secrets to actually work. The default agent workflow is broken in two directions:
 
 - **Agent reads `.env` directly** → secret values flow into the LLM's prompt, cache, and any vendor-side logging.
 - **Agent has no secrets** → the agent can't run migrations, deploys, or integration tests, so a human babysits every command.
@@ -181,6 +191,12 @@ Specifically, lusterpass does **not** protect against:
 The encrypted local cache protects secrets at rest from casual disk inspection, not from an attacker with your filesystem credentials.
 
 **Use at your own risk.** This software is provided "AS IS" under the [MIT License](LICENSE), with no warranty of any kind. The maintainers and contributors are not liable for any damages, data loss, security breaches, downtime, or financial harm arising from use, misuse, or inability to use this software. Review the source code, threat-model your environment, and validate against your organization's security policy before adopting in production-adjacent contexts.
+
+## About lustertools
+
+![lustertools — shine in code, empower every creation](https://raw.githubusercontent.com/lustertools/lusterpass/main/branding/lustertools-brand.png)
+
+Lusterpass is part of [lustertools](https://github.com/lustertools), a collection of high-quality, developer-first tools and libraries that help ideas shine in their best form. The lustertools family is built on four principles: **radiance** (your ideas shine), **quality** (crafted with care, built to last), **impact** (make the right things easier so you can create more), and **elegance** (clean, intuitive, delightful developer experience).
 
 ## License
 
