@@ -24,16 +24,21 @@ These rules are NON-NEGOTIABLE. They apply every time you interact with secrets.
 
 ### Safe Patterns
 
+`--profile` is optional. Use plain `lusterpass env` when the project's `.lusterpass.yaml`
+has only a `common:` section. Use `--profile <name>` only when the config defines
+profiles and you need per-environment overrides.
+
 ```bash
 # GOOD: load secrets into environment, use via variable reference
-eval "$(lusterpass env --profile dev)"
+eval "$(lusterpass env)"                  # common only — most projects
+eval "$(lusterpass env --profile dev)"    # common + dev overlay
 psql "postgresql://user:${DB_PASSWORD}@localhost/mydb"
 curl -H "Authorization: Bearer $API_KEY" https://api.example.com
 
 # GOOD: write scripts that reference env vars
 cat > run.sh << 'EOF'
 #!/bin/bash
-eval "$(lusterpass env --profile dev)"
+eval "$(lusterpass env)"
 python app.py  # app reads $DB_PASSWORD from environment
 EOF
 ```
@@ -42,7 +47,7 @@ EOF
 # BAD: never do any of these
 echo $DB_PASSWORD
 printenv API_KEY
-lusterpass env --profile dev  # without eval — prints values to screen
+lusterpass env             # without eval — prints values to screen
 cat ~/.lusterpass/cache/*
 ```
 
@@ -129,9 +134,11 @@ rm onboard-secrets.sh
 
 ```bash
 # Fetch secrets from Bitwarden and cache locally (encrypted)
-lusterpass pull --profile dev
+lusterpass pull                  # common-only config
+lusterpass pull --profile dev    # config with profiles
 
 # Load into current shell
+eval "$(lusterpass env)"
 eval "$(lusterpass env --profile dev)"
 ```
 
@@ -141,7 +148,7 @@ Replace your old plain-text `.envrc` with:
 
 ```bash
 # .envrc — secrets loaded from Bitwarden via lusterpass
-eval "$(lusterpass env --profile dev)"
+eval "$(lusterpass env)"
 ```
 
 Now secrets auto-load when you `cd` into the project directory (with direnv installed).

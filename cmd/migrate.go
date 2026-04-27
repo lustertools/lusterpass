@@ -143,7 +143,7 @@ var migrateCmd = &cobra.Command{
 	Long: `Scan an existing file containing export statements (e.g., .envrc, .zshrc, .bashrc),
 auto-detect which values are secrets vs plain vars, and generate:
 
-  1. .lusterpass.yaml — config with common vars/secrets + a dev profile example
+  1. .lusterpass.yaml — config with common vars/secrets (plus a commented-out profiles example)
   2. onboard-secrets.sh — editable script to enrol secrets into Bitwarden
 
 Review and edit the generated files, then run onboard-secrets.sh to migrate.`,
@@ -233,7 +233,7 @@ Review and edit the generated files, then run onboard-secrets.sh to migrate.`,
 		fmt.Println("  1. Review .lusterpass.yaml")
 		fmt.Println("     - Check that vars vs secrets are classified correctly")
 		fmt.Println("     - Adjust reference names in secrets if needed")
-		fmt.Println("     - Add more profiles (staging, prod) as needed")
+		fmt.Println("     - Uncomment the profiles: section if you need dev/staging/prod separation")
 		fmt.Println()
 		fmt.Println("  2. Edit onboard-secrets.sh")
 		fmt.Println("     - Review each secret's Bitwarden reference name (--ref)")
@@ -246,11 +246,11 @@ Review and edit the generated files, then run onboard-secrets.sh to migrate.`,
 		fmt.Printf("     %s --org YOUR_ORG_ID                 # or override org ID\n", scriptPath)
 		fmt.Println()
 		fmt.Println("  4. Pull and verify:")
-		fmt.Println("     lusterpass pull --profile dev")
-		fmt.Println("     lusterpass env --profile dev")
+		fmt.Println("     lusterpass pull")
+		fmt.Println("     lusterpass env")
 		fmt.Println()
 		fmt.Println("  5. Replace your old .envrc with:")
-		fmt.Println("     eval $(lusterpass env --profile dev)")
+		fmt.Println("     eval \"$(lusterpass env)\"")
 		fmt.Println()
 		fmt.Println("  6. Delete onboard-secrets.sh (contains plain secret values!)")
 
@@ -286,20 +286,22 @@ func writeMigratedYAML(path, project string, vars, secrets []envEntry) error {
 		}
 	}
 
-	b.WriteString("\n# Per-environment profiles\n")
-	b.WriteString("# Extend with staging, prod, etc. Profile values override common.\n")
-	b.WriteString("profiles:\n")
-	b.WriteString("  dev:\n")
-	b.WriteString("    vars:\n")
-	b.WriteString("      # Example: override common vars for dev\n")
-	b.WriteString("      # LOG_LEVEL: debug\n")
+	b.WriteString("\n# Per-environment profiles (optional)\n")
+	b.WriteString("# Uncomment and customize if you need to differentiate dev / staging / prod.\n")
+	b.WriteString("# Profile values override common values for the same key. Use:\n")
+	b.WriteString("#   lusterpass pull --profile dev\n")
+	b.WriteString("#   eval \"$(lusterpass env --profile dev)\"\n")
+	b.WriteString("#\n")
+	b.WriteString("# profiles:\n")
+	b.WriteString("#   dev:\n")
+	b.WriteString("#     vars:\n")
+	b.WriteString("#       LOG_LEVEL: debug\n")
 
 	if len(secrets) > 0 {
-		b.WriteString("    # secrets:\n")
-		b.WriteString("      # Example: per-env secret overrides\n")
+		b.WriteString("#     secrets:\n")
 		for _, s := range secrets {
 			ref := toRefName(s.Key, project)
-			fmt.Fprintf(&b, "      # %s: %s--dev\n", s.Key, ref)
+			fmt.Fprintf(&b, "#       %s: %s--dev\n", s.Key, ref)
 		}
 	}
 

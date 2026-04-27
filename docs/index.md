@@ -45,22 +45,23 @@ After installing and setting up Bitwarden, drop a `.lusterpass.yaml` in your pro
 ```yaml
 project: myapp
 
-profiles:
-  dev:
-    vars:
-      LOG_LEVEL: debug
-    secrets:
-      DATABASE_URL: db-url--myapp--dev
-      OPENAI_API_KEY: openai-key--myapp--dev
+common:
+  vars:
+    APP_NAME: myapp
+  secrets:
+    DATABASE_URL: db-url--myapp
+    OPENAI_API_KEY: openai-key--myapp
 ```
 
 Then:
 
 ```bash
-lusterpass login                       # one-time: store token + org ID
-lusterpass pull --profile dev          # fetch + encrypt locally
-eval "$(lusterpass env --profile dev)" # load into current shell
+lusterpass login              # one-time: store token + org ID
+lusterpass pull               # fetch + encrypt locally
+eval "$(lusterpass env)"      # load into current shell
 ```
+
+If you need per-environment differentiation (dev / staging / prod), add a `profiles:` section to the same file and pass `--profile <name>` to `pull` and `env`. Profile values override common values for the same key. See the [README](https://github.com/lustertools/lusterpass#6-optional-per-environment-profiles) for the full multi-profile shape.
 
 Your subprocess sees the resolved values. Your AI agent's transcript, your shell history, your CI logs, and your checked-in files don't.
 

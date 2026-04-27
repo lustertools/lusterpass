@@ -15,12 +15,8 @@ var pullProfile string
 var pullCmd = &cobra.Command{
 	Use:   "pull",
 	Short: "Fetch secrets from Bitwarden and cache locally",
+	Long:  "Fetch secrets defined in .lusterpass.yaml from Bitwarden and cache locally.\n\nOmit --profile to load only the common section. Pass --profile to additionally\noverlay an environment-specific profile (e.g., dev, staging, prod).",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if pullProfile == "" {
-			return fmt.Errorf("--profile is required")
-		}
-
-		// Load config
 		cfg, err := config.Load(configFile)
 		if err != nil {
 			return err
@@ -31,28 +27,31 @@ var pullCmd = &cobra.Command{
 			return err
 		}
 
-		// Resolve token
+		resolved, err := cfg.ResolveProfile(pullProfile)
+		if err != nil {
+			return err
+		}
+
+		if len(resolved.Secrets) == 0 {
+			if pullProfile == "" {
+				fmt.Println("No secrets to pull (no secrets defined in common section).")
+			} else {
+				fmt.Printf("No secrets to pull for profile %q.\n", pullProfile)
+			}
+			return nil
+		}
+
 		token, err := auth.ResolveTokenForAccount(account)
 		if err != nil {
 			return fmt.Errorf("no access token found. Run 'lusterpass login --account <name>' or set $BWS_ACCESS_TOKEN: %w", err)
 		}
 
-		// Connect to Bitwarden
 		client, err := bitwarden.NewSDKClient(token)
 		if err != nil {
 			return fmt.Errorf("connecting to Bitwarden: %w", err)
 		}
 		defer client.Close()
 
-		// Resolve profile
-		resolved := cfg.ResolveProfile(pullProfile)
-
-		if len(resolved.Secrets) == 0 {
-			fmt.Println("No secrets to pull for this profile.")
-			return nil
-		}
-
-		// Fetch secrets by reference name
 		orgID, err := resolveOrgID(cmd, account)
 		if err != nil {
 			return err
@@ -62,13 +61,11 @@ var pullCmd = &cobra.Command{
 			return fmt.Errorf("listing secrets: %w", err)
 		}
 
-		// Build key→ID map
 		keyToID := make(map[string]string)
 		for _, s := range allSecrets {
 			keyToID[s.Key] = s.ID
 		}
 
-		// Fetch each referenced secret
 		fetched := make(map[string]string)
 		for envVar, refName := range resolved.Secrets {
 			id, ok := keyToID[refName]
@@ -84,8 +81,7 @@ var pullCmd = &cobra.Command{
 			fetched[envVar] = secret.Value
 		}
 
-		// Write to cache
-		cachePath := cache.CachePath(account, cfg.Project, pullProfile)
+		cachePath := cache.CachePath(account, cfg.Project, cfg.CacheKey(pullProfile))
 		if err := cache.Write(cachePath, token, fetched); err != nil {
 			return fmt.Errorf("writing cache: %w", err)
 		}
@@ -96,7 +92,7 @@ var pullCmd = &cobra.Command{
 }
 
 func init() {
-	pullCmd.Flags().StringVar(&pullProfile, "profile", "", "Environment profile (e.g., dev, staging, prod)")
+	pullCmd.Flags().StringVar(&pullProfile, "profile", "", "Environment profile (e.g., dev, staging, prod); omit to load only the common section")
 	pullCmd.Flags().String("org", "", "Bitwarden organization ID")
 	rootCmd.AddCommand(pullCmd)
 }

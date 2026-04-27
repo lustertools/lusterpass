@@ -4,7 +4,10 @@
 
 project: myapp
 
-# Common: shared across all environments
+# Common: shared values used everywhere.
+# Pull and load with:
+#   lusterpass pull
+#   eval "$(lusterpass env)"
 common:
   vars:
     APP_NAME: myapp
@@ -12,30 +15,33 @@ common:
     TZ: UTC
   secrets:
     # Format: ENV_VAR_NAME: bitwarden-reference-name
-    SHARED_SIGNING_KEY: shared-signing-key--myapp
+    DATABASE_URL: db-url--myapp
+    OPENAI_API_KEY: openai-key--myapp
 
-# Per-environment profiles
-profiles:
-  dev:
-    vars:
-      LOG_LEVEL: debug
-      APP_URL: http://localhost:3000
-    secrets:
-      OPENAI_API_KEY: openai-key--myapp--dev
-      DB_PASSWORD: db-pass--myapp--dev
-
-  staging:
-    vars:
-      LOG_LEVEL: info
-      APP_URL: https://staging.myapp.com
-    secrets:
-      OPENAI_API_KEY: openai-key--myapp--staging
-      DB_PASSWORD: db-pass--myapp--staging
-
-  prod:
-    vars:
-      LOG_LEVEL: warn
-      APP_URL: https://myapp.com
-    secrets:
-      OPENAI_API_KEY: openai-key--myapp--prod
-      DB_PASSWORD: db-pass--myapp--prod
+# Per-environment profiles (optional)
+# Uncomment and customize if you need to differentiate dev / staging / prod.
+# Profile values override common values for the same key. Use:
+#   lusterpass pull --profile dev
+#   eval "$(lusterpass env --profile dev)"
+#
+# profiles:
+#   dev:
+#     vars:
+#       LOG_LEVEL: debug
+#       APP_URL: http://localhost:3000
+#     secrets:
+#       DATABASE_URL: db-url--myapp--dev
+#
+#   staging:
+#     vars:
+#       LOG_LEVEL: info
+#       APP_URL: https://staging.myapp.com
+#     secrets:
+#       DATABASE_URL: db-url--myapp--staging
+#
+#   prod:
+#     vars:
+#       LOG_LEVEL: warn
+#       APP_URL: https://myapp.com
+#     secrets:
+#       DATABASE_URL: db-url--myapp--prod

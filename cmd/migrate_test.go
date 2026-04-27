@@ -170,11 +170,19 @@ eval $(direnv hook zsh)
 	if strings.Contains(yaml, "sk-1234567890") {
 		t.Error("YAML contains plain API key!")
 	}
-	if !strings.Contains(yaml, "profiles:") {
-		t.Error("YAML missing profiles section")
+	if !strings.Contains(yaml, "# profiles:") {
+		t.Error("YAML missing commented profiles example block")
 	}
-	if !strings.Contains(yaml, "dev:") {
-		t.Error("YAML missing dev profile")
+	if !strings.Contains(yaml, "#   dev:") {
+		t.Error("YAML missing commented dev profile example")
+	}
+	// The profiles block should be commented out by default; an active
+	// "profiles:" line (no leading #) would mean it's enabled.
+	for _, line := range strings.Split(yaml, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "profiles:" {
+			t.Error("YAML has active profiles: line; expected commented-out by default")
+		}
 	}
 
 	scriptPath := filepath.Join(outDir, "onboard-secrets.sh")

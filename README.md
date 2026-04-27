@@ -13,8 +13,8 @@ Built for two audiences that share the same problem:
 - **AI coding agents** — Cline, Cursor, Aider, OpenClaw, Hermes, and any LLM-driven workflow that needs to run real commands without leaking secret values into prompt cache, transcripts, or vendor telemetry.
 
 ```bash
-# Your AI agent runs this:
-eval "$(lusterpass env --profile dev)"
+# Your AI agent (or you, or your CI job) runs this:
+eval "$(lusterpass env)"
 ./run-migrations.sh
 
 # What the agent sees in its transcript: nothing.
@@ -77,15 +77,9 @@ common:
   vars:
     APP_NAME: myapp
     LOG_FORMAT: json
-
-profiles:
-  dev:
-    vars:
-      LOG_LEVEL: debug
-      APP_URL: http://localhost:3000
-    secrets:
-      DATABASE_URL: db-url--myapp--dev
-      OPENAI_API_KEY: openai-key--myapp--dev
+  secrets:
+    DATABASE_URL: db-url--myapp
+    OPENAI_API_KEY: openai-key--myapp
 ```
 
 The right-hand side of `secrets:` is a **reference name** in Bitwarden — never a value.
@@ -93,18 +87,45 @@ The right-hand side of `secrets:` is a **reference name** in Bitwarden — never
 ### 4. Pull and use
 
 ```bash
-lusterpass pull --profile dev          # fetch + encrypt locally
-eval "$(lusterpass env --profile dev)" # load into current shell
+lusterpass pull              # fetch + encrypt locally
+eval "$(lusterpass env)"     # load into current shell
 ```
 
 ### 5. Optional: integrate with direnv
 
 ```bash
-echo 'eval "$(lusterpass env --profile dev)"' > .envrc
+echo 'eval "$(lusterpass env)"' > .envrc
 direnv allow
 ```
 
 Now `cd`-ing into the project loads secrets automatically — into your shell, not your agent's transcript.
+
+### 6. Optional: per-environment profiles
+
+If you need to differentiate dev / staging / prod, add a `profiles:` section to `.lusterpass.yaml`:
+
+```yaml
+profiles:
+  dev:
+    vars:
+      LOG_LEVEL: debug
+    secrets:
+      DATABASE_URL: db-url--myapp--dev   # overrides the common DATABASE_URL
+  prod:
+    vars:
+      LOG_LEVEL: warn
+    secrets:
+      DATABASE_URL: db-url--myapp--prod
+```
+
+Then use `--profile`:
+
+```bash
+lusterpass pull --profile dev
+eval "$(lusterpass env --profile dev)"
+```
+
+Profile values override common values for the same key. Without `--profile`, only the common section loads.
 
 ---
 
@@ -132,8 +153,10 @@ lusterpass account list       # multi-account: see all configured accounts
 lusterpass account use <n>    # switch active account
 lusterpass list               # show secret names (never values) in vault
 lusterpass enrol              # add a new secret to Bitwarden
-lusterpass pull --profile X   # fetch + cache secrets for a profile
-lusterpass env --profile X    # emit export lines for `eval`
+lusterpass pull               # fetch + cache common-section secrets
+lusterpass pull --profile X   # … or include an environment profile overlay
+lusterpass env                # emit export lines for `eval` (common only)
+lusterpass env --profile X    # … or include an environment profile overlay
 lusterpass migrate .envrc     # bootstrap config from existing .envrc
 lusterpass test               # end-to-end test against your vault
 ```

@@ -16,11 +16,8 @@ var envProfile string
 var envCmd = &cobra.Command{
 	Use:   "env",
 	Short: "Output export lines from cached secrets and config vars",
+	Long:  "Output 'export VAR=value' lines for shell eval, drawing from the encrypted local cache.\n\nOmit --profile to emit only the common section. Pass --profile to additionally\noverlay an environment-specific profile (e.g., dev, staging, prod).",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if envProfile == "" {
-			return fmt.Errorf("--profile is required")
-		}
-
 		cfg, err := config.Load(configFile)
 		if err != nil {
 			return err
@@ -31,18 +28,24 @@ var envCmd = &cobra.Command{
 			return err
 		}
 
-		resolved := cfg.ResolveProfile(envProfile)
+		resolved, err := cfg.ResolveProfile(envProfile)
+		if err != nil {
+			return err
+		}
 
-		// Load cached secrets
 		token, err := auth.ResolveTokenForAccount(account)
 		if err != nil {
 			return fmt.Errorf("no access token for cache decryption: %w", err)
 		}
 
-		cachePath := cache.CachePath(account, cfg.Project, envProfile)
+		cachePath := cache.CachePath(account, cfg.Project, cfg.CacheKey(envProfile))
 		secrets, err := cache.Read(cachePath, token)
 		if err != nil {
-			return fmt.Errorf("reading cache (run 'lusterpass pull --profile %s' first): %w", envProfile, err)
+			pullHint := "lusterpass pull"
+			if envProfile != "" {
+				pullHint = fmt.Sprintf("lusterpass pull --profile %s", envProfile)
+			}
+			return fmt.Errorf("reading cache (run '%s' first): %w", pullHint, err)
 		}
 
 		fmt.Print(formatExports(resolved.Vars, secrets))
@@ -83,6 +86,6 @@ func shellEscape(s string) string {
 }
 
 func init() {
-	envCmd.Flags().StringVar(&envProfile, "profile", "", "Environment profile (e.g., dev, staging, prod)")
+	envCmd.Flags().StringVar(&envProfile, "profile", "", "Environment profile (e.g., dev, staging, prod); omit to emit only the common section")
 	rootCmd.AddCommand(envCmd)
 }

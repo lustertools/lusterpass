@@ -87,7 +87,10 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		resolved := cfg.ResolveProfile("test")
+		resolved, err := cfg.ResolveProfile("test")
+		if err != nil {
+			return err
+		}
 
 		// List secrets to get IDs
 		allSecrets, err := client.ListSecrets(orgID)
