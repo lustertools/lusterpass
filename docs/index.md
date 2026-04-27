@@ -82,6 +82,29 @@ The full daily workflow — `login`, `list`, `pull`, `env`, `enrol` — in 30 se
 
 ---
 
+## Shell completion
+
+Lusterpass ships dynamic shell completion via cobra. Tab-completion always reflects the installed binary's current command tree — no need to regenerate when you upgrade.
+
+```bash
+# zsh
+lusterpass completion zsh > "${fpath[1]}/_lusterpass"
+
+# bash (Linux)
+lusterpass completion bash > /etc/bash_completion.d/lusterpass
+
+# bash (macOS, with bash-completion@2)
+lusterpass completion bash > "$(brew --prefix)/etc/bash_completion.d/lusterpass"
+
+# fish
+lusterpass completion fish > ~/.config/fish/completions/lusterpass.fish
+
+# PowerShell
+lusterpass completion powershell | Out-String | Invoke-Expression
+```
+
+---
+
 ## About lustertools
 
 ![lustertools — shine in code, empower every creation](https://raw.githubusercontent.com/lustertools/lusterpass/main/branding/lustertools-brand.png)

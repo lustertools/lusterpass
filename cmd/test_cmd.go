@@ -14,8 +14,10 @@ import (
 )
 
 var testCmd = &cobra.Command{
-	Use:   "test",
-	Short: "Run end-to-end test using Bitwarden testing project",
+	Use:    "test",
+	Short:  "Run end-to-end test using Bitwarden testing project",
+	Long:   "Maintainer self-check: seeds two secrets in the Bitwarden 'testing' project, pulls them via the testdata/mockapp fixture, verifies the resolved exports against expected.env, and cleans up. Requires a Bitwarden project named 'testing' to exist. Not intended for end-user workflows.",
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// test uses the active account
 		account, err := resolveAccount(nil)
