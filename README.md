@@ -2,6 +2,8 @@
 
 **Secrets that AI coding agents can use, but never see.**
 
+![Agent-safe demo](demos/agent-safe/agent-safe-demo.gif)
+
 Lusterpass is a CLI that loads secrets from [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/) into a child process's environment without ever exposing the values to the agent driving the shell. It is built for the era of AI coding agents — Cline, Cursor, Aider, OpenClaw, Hermes, and any LLM-driven workflow that needs to run real commands against real systems.
 
 ```bash
