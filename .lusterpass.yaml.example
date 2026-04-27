@@ -5,9 +5,10 @@
 project: myapp
 
 # Common: shared values used everywhere.
-# Pull and load with:
+# Pull, then run a command with secrets in its environment:
 #   lusterpass pull
-#   eval "$(lusterpass env)"
+#   lusterpass exec -- ./your-script.sh        # recommended
+#   eval "$(lusterpass env)"                   # alternative: load into shell
 common:
   vars:
     APP_NAME: myapp

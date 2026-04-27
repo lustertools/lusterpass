@@ -35,17 +35,16 @@ while IFS= read -r line; do
     *lusterpass*|*Lusterpass*|*"the safe way"*)
       sleep 0.4
       echo
-      echo "● eval \"\$(lusterpass env --profile dev)\""
-      sleep 0.4
-      echo "  [lusterpass] resolved 4 secrets from encrypted cache"
+      echo "● lusterpass exec -- ./run-migration.sh"
       sleep 0.5
-      echo "● ./run-migration.sh"
-      sleep 0.3
+      echo "  [lusterpass] resolved 4 secrets, replaced self with ./run-migration.sh"
+      sleep 0.4
       echo "  connecting as \$DB_USER ${DIM}(password from env, never read by me)${RESET}"
       sleep 0.4
       echo "  ✓ 3 migrations applied"
-      sleep 0.4
-      echo "● Done. Migrations applied. No secret values entered my transcript."
+      sleep 0.5
+      echo "● Done. Migrations applied. No secret values entered my transcript,"
+      echo "  no values leaked into your shell, no eval needed."
       ;;
     /exit|exit|quit)
       break

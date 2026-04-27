@@ -14,11 +14,12 @@ Built for two audiences that share the same problem:
 
 ```bash
 # Your AI agent (or you, or your CI job) runs this:
-eval "$(lusterpass env)"
-./run-migrations.sh
+lusterpass exec -- ./run-migrations.sh
 
 # What the agent sees in its transcript: nothing.
 # What the migration script sees in its env: DATABASE_URL, API_KEY, ...
+# What your shell sees afterwards: also nothing — secrets exist only in
+# the migration script's process, then disappear.
 ```
 
 The agent never reads a `.env` file. The values never enter the LLM's context window, prompt cache, or telemetry pipeline. The only surface area the agent touches is the *names* of secrets — defined in a committed `.lusterpass.yaml` — and the `eval` line that hands them to the next process.
@@ -87,9 +88,18 @@ The right-hand side of `secrets:` is a **reference name** in Bitwarden — never
 ### 4. Pull and use
 
 ```bash
-lusterpass pull              # fetch + encrypt locally
-eval "$(lusterpass env)"     # load into current shell
+lusterpass pull                              # fetch + encrypt locally
+
+# Recommended: run a single command with secrets in its env.
+# Secrets never enter your shell, your history, or stdout.
+lusterpass exec -- ./run-migrations.sh
+lusterpass exec -- npm test
+
+# Alternative: load secrets into your current shell (persists until exit).
+eval "$(lusterpass env)"
 ```
+
+`exec` is the safer default — see [Security model](docs/security-model.md) for why.
 
 ### 5. Optional: integrate with direnv
 
@@ -98,7 +108,7 @@ echo 'eval "$(lusterpass env)"' > .envrc
 direnv allow
 ```
 
-Now `cd`-ing into the project loads secrets automatically — into your shell, not your agent's transcript.
+Now `cd`-ing into the project loads secrets automatically — into your shell, not your agent's transcript. (direnv requires `eval`-style integration; `exec` doesn't work for this case.)
 
 ### 6. Optional: per-environment profiles
 
@@ -155,8 +165,10 @@ lusterpass list               # show secret names (never values) in vault
 lusterpass enrol              # add a new secret to Bitwarden
 lusterpass pull               # fetch + cache common-section secrets
 lusterpass pull --profile X   # … or include an environment profile overlay
-lusterpass env                # emit export lines for `eval` (common only)
-lusterpass env --profile X    # … or include an environment profile overlay
+lusterpass exec -- <cmd>      # run <cmd> with secrets in its env (recommended)
+lusterpass exec --profile X -- <cmd>
+lusterpass env                # emit export lines for `eval` (direnv integration)
+lusterpass env --profile X
 lusterpass migrate .envrc     # bootstrap config from existing .envrc
 lusterpass test               # end-to-end test against your vault
 ```
@@ -164,6 +176,18 @@ lusterpass test               # end-to-end test against your vault
 Full per-command help: `lusterpass <command> --help`.
 
 ---
+
+## Security model
+
+Three execution paths with very different safety properties:
+
+| Path | Secrets enter parent shell? | Printed to terminal? | Persist after run? | Recommended? |
+|---|---|---|---|---|
+| `lusterpass exec -- <cmd>` | No | Never | No (process replaced) | **Yes** for most cases |
+| `eval "$(lusterpass env)"` | Yes | Never (captured pipe) | Until shell exits | For direnv only |
+| `lusterpass env` (raw) | n/a | **Would print to TTY** | n/a | Blocked by TTY guard |
+
+Read [docs/security-model.md](docs/security-model.md) for the full threat model: what lusterpass defends against, what it doesn't (notably: local shell compromise), how `execve` makes `exec` zero-overhead on Unix, what lives where on disk, known footguns, and comparison to `direnv`/`sops`/`op`/`doppler`/`chamber`/`aws-vault`.
 
 ## What lusterpass is *not*
 

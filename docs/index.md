@@ -35,6 +35,7 @@ For specific versions and custom install directories, see the [README](https://g
 
 - **[Bitwarden setup guide](bitwarden-setup.html)** — set up your Bitwarden Secrets Manager account, organization, and machine access token. Start here if you don't have a Bitwarden Secrets Manager account yet.
 - **[Migration guide](migration-guide.html)** — migrate an existing `.envrc` (or any shell rc file) to lusterpass with the built-in `lusterpass migrate` command.
+- **[Security model](security-model.html)** — the precise threat model: what lusterpass defends against, what it does not, how each execution path actually works, and comparisons to alternatives.
 
 ---
 
@@ -56,12 +57,20 @@ common:
 Then:
 
 ```bash
-lusterpass login              # one-time: store token + org ID
-lusterpass pull               # fetch + encrypt locally
-eval "$(lusterpass env)"      # load into current shell
+lusterpass login                              # one-time: store token + org ID
+lusterpass pull                               # fetch + encrypt locally
+
+# Recommended: secrets exist only in the child process, never in your shell.
+lusterpass exec -- ./run-migrations.sh
+lusterpass exec -- npm test
+
+# Alternative: load into current shell (persists until exit).
+eval "$(lusterpass env)"
 ```
 
-If you need per-environment differentiation (dev / staging / prod), add a `profiles:` section to the same file and pass `--profile <name>` to `pull` and `env`. Profile values override common values for the same key. See the [README](https://github.com/lustertools/lusterpass#6-optional-per-environment-profiles) for the full multi-profile shape.
+`exec` is the safer default. See [Security model](security-model.html) for the full comparison.
+
+If you need per-environment differentiation (dev / staging / prod), add a `profiles:` section to the same file and pass `--profile <name>` to `pull`, `exec`, and `env`. Profile values override common values for the same key. See the [README](https://github.com/lustertools/lusterpass#6-optional-per-environment-profiles) for the full multi-profile shape.
 
 Your subprocess sees the resolved values. Your AI agent's transcript, your shell history, your CI logs, and your checked-in files don't.
 

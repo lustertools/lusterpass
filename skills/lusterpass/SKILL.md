@@ -24,12 +24,21 @@ These rules are NON-NEGOTIABLE. They apply every time you interact with secrets.
 
 ### Safe Patterns
 
-`--profile` is optional. Use plain `lusterpass env` when the project's `.lusterpass.yaml`
+`--profile` is optional. Use plain commands when the project's `.lusterpass.yaml`
 has only a `common:` section. Use `--profile <name>` only when the config defines
 profiles and you need per-environment overrides.
 
+**PREFERRED: `lusterpass exec -- <command>`** — runs the command with secrets
+in its environment, never touches your shell, never writes values to stdout.
+
 ```bash
-# GOOD: load secrets into environment, use via variable reference
+# BEST: secrets exist only in the child process, vanish when it exits
+lusterpass exec -- ./run-migrations.sh
+lusterpass exec -- npm test
+lusterpass exec --profile dev -- ./deploy.sh
+lusterpass exec -- bash -c 'psql "postgresql://user:${DB_PASSWORD}@localhost/db"'
+
+# ALSO GOOD: load into current shell (for direnv or extended sessions)
 eval "$(lusterpass env)"                  # common only — most projects
 eval "$(lusterpass env --profile dev)"    # common + dev overlay
 psql "postgresql://user:${DB_PASSWORD}@localhost/mydb"
@@ -47,9 +56,18 @@ EOF
 # BAD: never do any of these
 echo $DB_PASSWORD
 printenv API_KEY
-lusterpass env             # without eval — prints values to screen
-cat ~/.lusterpass/cache/*
+lusterpass env             # without eval — refuses to print to a terminal,
+                           #   but in a pipe (e.g. an agent's command capture)
+                           #   would dump values to your transcript. Don't.
+cat ~/.lusterpass/cache/*  # encrypted blob, but reading it is suspicious
+cat ~/.lusterpass/accounts/*/token  # the access token — never read this
 ```
+
+**Rule of thumb:** if you're running a single command that needs secrets,
+use `lusterpass exec -- <command>`. If you're staying in an interactive shell
+or integrating with direnv, use `eval "$(lusterpass env)"`. Never run plain
+`lusterpass env` — the TTY guard catches the human-typo case but a piped
+context (an agent's command capture, for instance) would still leak.
 
 ### For AI Agents and Bots
 

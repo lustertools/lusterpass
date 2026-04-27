@@ -61,6 +61,54 @@ func TestFormatExportsSecretOverridesVar(t *testing.T) {
 	}
 }
 
+func TestEnvTTYGuardRefusesWhenStdoutIsTerminal(t *testing.T) {
+	originalIsTerminal := stdoutIsTerminal
+	defer func() { stdoutIsTerminal = originalIsTerminal }()
+	stdoutIsTerminal = func() bool { return true }
+
+	envProfile = ""
+	err := envCmd.RunE(envCmd, []string{})
+	if err == nil {
+		t.Fatal("expected error when stdout is a TTY, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "refusing to print") {
+		t.Errorf("error should explain why we refuse; got: %s", msg)
+	}
+	if !strings.Contains(msg, `eval "$(lusterpass env)"`) {
+		t.Errorf("error should suggest eval; got: %s", msg)
+	}
+	if !strings.Contains(msg, "lusterpass exec") {
+		t.Errorf("error should suggest exec; got: %s", msg)
+	}
+}
+
+func TestEnvTTYGuardErrorIncludesProfile(t *testing.T) {
+	originalIsTerminal := stdoutIsTerminal
+	defer func() { stdoutIsTerminal = originalIsTerminal }()
+	stdoutIsTerminal = func() bool { return true }
+
+	envProfile = "dev"
+	defer func() { envProfile = "" }()
+	err := envCmd.RunE(envCmd, []string{})
+	if err == nil {
+		t.Fatal("expected error when stdout is a TTY, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--profile dev") {
+		t.Errorf("error should preserve --profile flag in suggestion; got: %s", msg)
+	}
+}
+
+func TestProfileSuffix(t *testing.T) {
+	if got := profileSuffix(""); got != "" {
+		t.Errorf("profileSuffix(\"\") = %q, want \"\"", got)
+	}
+	if got := profileSuffix("dev"); got != " --profile dev" {
+		t.Errorf("profileSuffix(\"dev\") = %q, want \" --profile dev\"", got)
+	}
+}
+
 func TestFormatExportsSorted(t *testing.T) {
 	vars := map[string]string{
 		"ZZZ": "last",

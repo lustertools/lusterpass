@@ -290,7 +290,7 @@ func writeMigratedYAML(path, project string, vars, secrets []envEntry) error {
 	b.WriteString("# Uncomment and customize if you need to differentiate dev / staging / prod.\n")
 	b.WriteString("# Profile values override common values for the same key. Use:\n")
 	b.WriteString("#   lusterpass pull --profile dev\n")
-	b.WriteString("#   eval \"$(lusterpass env --profile dev)\"\n")
+	b.WriteString("#   lusterpass exec --profile dev -- ./your-script.sh\n")
 	b.WriteString("#\n")
 	b.WriteString("# profiles:\n")
 	b.WriteString("#   dev:\n")
