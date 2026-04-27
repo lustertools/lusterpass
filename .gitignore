@@ -8,7 +8,8 @@ bin/
 .envrc
 onboard-secrets.sh
 
-# Internal planning artifacts (contain personal absolute paths)
+# Internal planning artifacts (not for the public repo)
+docs/plans/
 docs/superpowers/
 findings.md
 progress.md

@@ -1,0 +1,13 @@
+title: lusterpass
+description: Agent-safe secret manager for AI coding agents.
+theme: jekyll-theme-cayman
+url: "https://lustertools.github.io"
+baseurl: "/lusterpass"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Files in /docs that should not be published as pages
+exclude:
+  - release-and-install.md
