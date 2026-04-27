@@ -1,0 +1,23 @@
+# Build outputs
+/lusterpass
+build/
+bin/
+
+# Local user state (real secrets, never commit)
+.lusterpass.yaml
+.envrc
+onboard-secrets.sh
+
+# Internal planning artifacts (contain personal absolute paths)
+docs/superpowers/
+findings.md
+progress.md
+task_plan.md
+
+# Test fixtures intentionally include sample .lusterpass.yaml / .envrc — keep them
+!testdata/**/.lusterpass.yaml
+!testdata/**/.envrc
+
+# Override global ignores for repo files
+!.envrc.example
+!local-release.sh

@@ -1,0 +1,41 @@
+# lusterpass configuration
+# Copy to .lusterpass.yaml in your project root and customize.
+# This file contains NO secret values — safe to commit to git.
+
+project: myapp
+
+# Common: shared across all environments
+common:
+  vars:
+    APP_NAME: myapp
+    LOG_FORMAT: json
+    TZ: UTC
+  secrets:
+    # Format: ENV_VAR_NAME: bitwarden-reference-name
+    SHARED_SIGNING_KEY: shared-signing-key--myapp
+
+# Per-environment profiles
+profiles:
+  dev:
+    vars:
+      LOG_LEVEL: debug
+      APP_URL: http://localhost:3000
+    secrets:
+      OPENAI_API_KEY: openai-key--myapp--dev
+      DB_PASSWORD: db-pass--myapp--dev
+
+  staging:
+    vars:
+      LOG_LEVEL: info
+      APP_URL: https://staging.myapp.com
+    secrets:
+      OPENAI_API_KEY: openai-key--myapp--staging
+      DB_PASSWORD: db-pass--myapp--staging
+
+  prod:
+    vars:
+      LOG_LEVEL: warn
+      APP_URL: https://myapp.com
+    secrets:
+      OPENAI_API_KEY: openai-key--myapp--prod
+      DB_PASSWORD: db-pass--myapp--prod

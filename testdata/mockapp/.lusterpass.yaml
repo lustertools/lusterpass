@@ -1,0 +1,14 @@
+project: lusterpass-test
+
+common:
+  vars:
+    APP_NAME: mockapp
+    ENV: test
+
+profiles:
+  test:
+    vars:
+      LOG_LEVEL: debug
+    secrets:
+      TEST_SECRET_A: test-secret-a--lusterpass-test
+      TEST_SECRET_B: test-secret-b--lusterpass-test
