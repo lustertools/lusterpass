@@ -135,12 +135,4 @@ jobs:
               dist/*
           fi
 
-      # GitHub auto-generates source archives for tagged releases.
-      # Deleting the tag ref removes them while keeping the release + assets.
-      - name: Remove source code archives from release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.resolve.outputs.tag }}
-        run: |
-          gh api --method DELETE "repos/${{ github.repository }}/git/refs/tags/${TAG}" 2>/dev/null || true
 
